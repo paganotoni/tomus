@@ -37,6 +37,7 @@ func middleware(next buffalo.Handler) buffalo.Handler {
 
 		c.Set("X-Request-ID", id)
 		c.LogField("X-Request-ID", id)
+
 		return next(c)
 	}
 }

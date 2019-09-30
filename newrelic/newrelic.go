@@ -34,8 +34,8 @@ type tracker struct {
 func NewTracker() tracker {
 	result := tracker{}
 
-	name := envy.Get("NEWRELIC_APP_NAME", "app/byod")
-	suffix := envy.Get("NEWRELIC_SUFFIX", fmt.Sprintf("(%v)", env))
+	name := envy.Get("NEWRELIC_APP_NAME", fmt.Sprintf("app/%v", envy.Get("APP_NAME", "")))
+	suffix := envy.Get("NEWRELIC_ENV", fmt.Sprintf("(%v)", env))
 
 	result.config = newrelic.NewConfig(fmt.Sprintf("%v %v", name, suffix), license)
 	result.config.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_NEWRELIC"))

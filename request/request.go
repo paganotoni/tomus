@@ -13,6 +13,8 @@ func MountTo(app *buffalo.App) {
 	app.Use(middleware)
 }
 
+//middleware takes care of extracting the request id from the
+//request. and putting it into the context.
 func middleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		id := c.Request().Header.Get(requestIdentifier)

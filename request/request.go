@@ -21,6 +21,6 @@ func middleware(next buffalo.Handler) buffalo.Handler {
 		}
 
 		c.Set("X-Request-ID", id)
-		next(c)
+		return next(c)
 	}
 }

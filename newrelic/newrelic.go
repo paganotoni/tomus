@@ -8,7 +8,6 @@ import (
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	newrelic "github.com/newrelic/go-agent"
 )
@@ -16,16 +15,15 @@ import (
 var (
 	config newrelic.Config
 	nrApp  newrelic.Application
-)
+	logger buffalo.Logger
 
-var (
 	license = envy.Get("NEWRELIC_LICENSE_KEY", "")
 	name    = envy.Get("NEWRELIC_APP_NAME", "app/byod")
 	env     = envy.Get("NEWRELIC_ENV", "staging")
 )
 
-func MountTo(app *buffalo.App) {
-	app.Use()
+func MountTo(app *buffalo.App, logger buffalo.Logger) {
+	app.Use(middleware)
 }
 
 func init() {
@@ -40,7 +38,7 @@ func init() {
 
 	var err error
 	if nrApp, err = newrelic.NewApplication(config); err != nil {
-		logrus.Error(errors.Wrap(err, "tomus error creating newrelic app"))
+		logger.Error(errors.Wrap(err, "tomus error creating newrelic app"))
 	}
 }
 
@@ -82,57 +80,55 @@ func middleware(next buffalo.Handler) buffalo.Handler {
 }
 
 //TrackBackgroundTransaction allows to track non web transaction functions.
-// func TrackBackgroundTransaction(name string, fn func() error) {
-// 	logger := Logger()
+func TrackBackgroundTransaction(name string, fn func() error) {
+	if nrApp == nil {
+		if err := fn(); err != nil {
+			logger.Error(err)
+		}
 
-// 	if NewRelicApplication == nil {
-// 		if err := fn(); err != nil {
-// 			logger.Error(err)
-// 		}
+		return
+	}
 
-// 		return
-// 	}
+	txn := nrApp.StartTransaction(name, nil, nil)
+	if err := fn(); err != nil {
+		if nrErr := txn.NoticeError(err); nrErr != nil {
+			logger.Error(nrErr)
+		}
+	}
 
-// 	txn := NewRelicApplication.StartTransaction(name, nil, nil)
-// 	if err := fn(); err != nil {
-// 		if nrErr := txn.NoticeError(err); nrErr != nil {
-// 			logger.Error(nrErr)
-// 		}
-// 	}
+	if err := txn.End(); err != nil {
+		logger.Error(err)
+	}
+}
 
-// 	if err := txn.End(); err != nil {
-// 		logger.Error(err)
-// 	}
-// }
+//TrackError tracks a newrelic error this is useful for error pages and crashes.
+func TrackError(c buffalo.Context, err error) error {
+	var oerr error
 
-// //TrackError tracks a newrelic error.
-// func TrackError(c buffalo.Context, err error) error {
-// 	var oerr error
+	if !config.Enabled {
+		c.Logger().Info("Not notifying error to NR since is disabled")
+		return nil
+	}
 
-// 	if !NewRelicConfig.Enabled {
-// 		c.Logger().Info("Not notifying error to NR since is disabled")
-// 		return nil
-// 	}
+	txn := nrApp.StartTransaction(c.Request().URL.String(), c.Response(), c.Request())
+	defer func() {
+		if oerr = txn.End(); oerr != nil {
+			c.Logger().Error(oerr)
+		}
+	}()
 
-// 	txn := NewRelicApplication.StartTransaction(c.Request().URL.String(), c.Response(), c.Request())
-// 	defer func() {
-// 		if oerr = txn.End(); oerr != nil {
-// 			c.Logger().Error(oerr)
-// 		}
-// 	}()
+	if oerr = txn.AddAttribute("RequestID", c.Value("request_id")); oerr != nil {
+		c.Logger().Error(oerr)
+	}
 
-// 	if oerr = txn.AddAttribute("RequestID", c.Value("request_id")); oerr != nil {
-// 		c.Logger().Error(oerr)
-// 	}
+	ri := c.Value("current_route").(buffalo.RouteInfo)
+	if oerr = txn.AddAttribute("PathName", ri.PathName); oerr != nil {
+		c.Logger().Error(oerr)
+	}
 
-// 	ri := c.Value("current_route").(buffalo.RouteInfo)
-// 	if oerr = txn.AddAttribute("PathName", ri.PathName); oerr != nil {
-// 		c.Logger().Error(oerr)
-// 	}
+	if oerr = txn.NoticeError(err); oerr != nil {
+		return errors.Wrap(oerr, "MonitoringMW error notifying failed")
+	}
 
-// 	if oerr = txn.NoticeError(err); oerr != nil {
-// 		return errors.Wrap(oerr, "MonitoringMW error notifying failed")
-// 	}
-
-// 	return nil
-// }
+	return nil
+}

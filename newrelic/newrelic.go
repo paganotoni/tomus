@@ -30,8 +30,9 @@ func init() {
 	suffix := envy.Get("NEWRELIC_SUFFIX", fmt.Sprintf("(%v)", env))
 
 	config = newrelic.NewConfig(fmt.Sprintf("%v %v", name, suffix), license)
-	config.DistributedTracer.Enabled = true
 	config.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_NEWRELIC"))
+	config.DistributedTracer.Enabled = true
+
 	config.Labels = map[string]string{
 		"ENVIRONMENT": env,
 	}

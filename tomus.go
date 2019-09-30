@@ -18,8 +18,8 @@ func Setup(app *buffalo.App) {
 	request.MountTo(app)
 }
 
-func TrackError(c buffalo.Context, err error) {
-	newrelic.NewTracker().TrackError(c, err)
+func TrackError(c buffalo.Context, err error) error {
+	return newrelic.NewTracker().TrackError(c, err)
 }
 
 func TrackBackgroundTransaction(name string, fn func() error) {

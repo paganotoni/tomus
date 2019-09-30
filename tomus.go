@@ -6,16 +6,17 @@ import (
 	"github.com/paganotoni/tomus/logentries"
 	"github.com/paganotoni/tomus/newrelic"
 	"github.com/paganotoni/tomus/request"
+	"github.com/gobuffalo/buffalo/render"
 )
 
 // Setup receives the app it will add the logger and other tools and from that
 // it adds NewRelic and Logentries elements into the buffalo app.
-func Setup(app *buffalo.App) {
+func Setup(app *buffalo.App, r *render.Engine) {
 	logColorsEnabled := envy.Get("GO_ENV", "development") == "development"
 	app.Logger = logentries.NewLogger(logColorsEnabled)
 
 	newrelic.MountTo(app, app.Logger)
-	request.MountTo(app)
+	request.MountTo(app, r)
 }
 
 func TrackError(c buffalo.Context, err error) error {

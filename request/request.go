@@ -2,6 +2,7 @@ package request
 
 import (
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/buffalo/render"
 	"github.com/gofrs/uuid"
 )
 
@@ -9,8 +10,17 @@ var (
 	requestIdentifier = "X-Request-ID"
 )
 
-func MountTo(app *buffalo.App) {
+var renderEngine *render.Engine
+
+func MountTo(app *buffalo.App, r *render.Engine) {
+	renderEngine = r
 	app.Use(middleware)
+	app.GET("/admin/info", healthCheck)
+}
+
+// healthCheck allows to check if the app is ready to respond.
+func healthCheck(c buffalo.Context) error {
+	return c.Render(200, renderEngine.String("OK"))
 }
 
 //middleware takes care of extracting the request id from the

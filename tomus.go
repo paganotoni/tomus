@@ -17,3 +17,11 @@ func Setup(app *buffalo.App) {
 	newrelic.MountTo(app, app.Logger)
 	request.MountTo(app)
 }
+
+func TrackError(c buffalo.Context, err error) {
+	newrelic.NewTracker().TrackError(c, err)
+}
+
+func TrackBackgroundTransaction(name string, fn func() error) {
+	newrelic.NewTracker().TrackBackgroundTransaction(name, fn)
+}

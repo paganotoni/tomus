@@ -8,49 +8,58 @@ import (
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	newrelic "github.com/newrelic/go-agent"
 )
 
 var (
-	config newrelic.Config
-	nrApp  newrelic.Application
-	logger buffalo.Logger
-
 	license = envy.Get("NEWRELIC_LICENSE_KEY", "")
-	name    = envy.Get("NEWRELIC_APP_NAME", "app/byod")
 	env     = envy.Get("NEWRELIC_ENV", "staging")
 )
 
 func MountTo(app *buffalo.App, logger buffalo.Logger) {
-	app.Use(middleware)
+	trk := NewTracker()
+	trk.logger = logger
+
+	app.Use(trk.Middleware)
 }
 
-func init() {
+type tracker struct {
+	config newrelic.Config
+	app    newrelic.Application
+	logger buffalo.Logger
+}
+
+func NewTracker() tracker {
+	result := tracker{}
+
+	name := envy.Get("NEWRELIC_APP_NAME", "app/byod")
 	suffix := envy.Get("NEWRELIC_SUFFIX", fmt.Sprintf("(%v)", env))
 
-	config = newrelic.NewConfig(fmt.Sprintf("%v %v", name, suffix), license)
-	config.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_NEWRELIC"))
-	config.DistributedTracer.Enabled = true
-
-	config.Labels = map[string]string{
+	result.config = newrelic.NewConfig(fmt.Sprintf("%v %v", name, suffix), license)
+	result.config.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_NEWRELIC"))
+	result.config.DistributedTracer.Enabled = true
+	result.config.Labels = map[string]string{
 		"ENVIRONMENT": env,
 	}
 
 	var err error
-	if nrApp, err = newrelic.NewApplication(config); err != nil {
-		logger.Error(errors.Wrap(err, "tomus error creating newrelic app"))
+	if result.app, err = newrelic.NewApplication(result.config); err != nil {
+		logrus.Error(errors.Wrap(err, "tomus error creating newrelic app"))
 	}
+
+	return result
 }
 
-func middleware(next buffalo.Handler) buffalo.Handler {
+func (t tracker) Middleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		if !config.Enabled {
+		if !t.config.Enabled {
 			c.Logger().Info("Skipping newrelic middleware because its disabled")
 			return next(c)
 		}
 
-		txn := nrApp.StartTransaction(c.Request().URL.String(), c.Response(), c.Request())
+		txn := t.app.StartTransaction(c.Request().URL.String(), c.Response(), c.Request())
 
 		ri := c.Value("current_route").(buffalo.RouteInfo)
 		if err := txn.AddAttribute("PathName", ri.PathName); err != nil {
@@ -81,37 +90,37 @@ func middleware(next buffalo.Handler) buffalo.Handler {
 }
 
 //TrackBackgroundTransaction allows to track non web transaction functions.
-func TrackBackgroundTransaction(name string, fn func() error) {
-	if nrApp == nil {
+func (t tracker) TrackBackgroundTransaction(name string, fn func() error) {
+	if t.app == nil {
 		if err := fn(); err != nil {
-			logger.Error(err)
+			t.logger.Error(err)
 		}
 
 		return
 	}
 
-	txn := nrApp.StartTransaction(name, nil, nil)
+	txn := t.app.StartTransaction(name, nil, nil)
 	if err := fn(); err != nil {
 		if nrErr := txn.NoticeError(err); nrErr != nil {
-			logger.Error(nrErr)
+			t.logger.Error(nrErr)
 		}
 	}
 
 	if err := txn.End(); err != nil {
-		logger.Error(err)
+		t.logger.Error(err)
 	}
 }
 
 //TrackError tracks a newrelic error this is useful for error pages and crashes.
-func TrackError(c buffalo.Context, err error) error {
+func (t tracker) TrackError(c buffalo.Context, err error) error {
 	var oerr error
 
-	if !config.Enabled {
+	if !t.config.Enabled {
 		c.Logger().Info("Not notifying error to NR since is disabled")
 		return nil
 	}
 
-	txn := nrApp.StartTransaction(c.Request().URL.String(), c.Response(), c.Request())
+	txn := t.app.StartTransaction(c.Request().URL.String(), c.Response(), c.Request())
 	defer func() {
 		if oerr = txn.End(); oerr != nil {
 			c.Logger().Error(oerr)

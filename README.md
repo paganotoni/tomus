@@ -12,6 +12,5 @@ tomus.Setup(app)
 This will:
 
 - Use `NEWRELIC_ENV`, `ENABLE_NEWRELIC`, `NEWRELIC_LICENSE_KEY` and `APP_NAME` to add a newrelic middleware.
-
 - Use `LOGENTRIES_TAG` to build a Logentries buffalo logger.
 - Add a cross service request tracking middleware that will add the `X-Request-ID` to the context so it can be passed to other HTTP calls as header.

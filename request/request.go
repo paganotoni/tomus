@@ -16,6 +16,7 @@ func MountTo(app *buffalo.App, r *render.Engine) {
 	renderEngine = r
 	app.Use(middleware)
 	app.GET("/admin/info", healthCheck)
+	app.Middleware.Clear()
 }
 
 // healthCheck allows to check if the app is ready to respond.

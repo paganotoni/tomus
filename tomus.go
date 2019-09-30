@@ -9,7 +9,7 @@ import (
 )
 
 // Setup receives the app it will add the logger and other tools and from that
-// It adds
+// it adds NewRelic and Logentries elements into the buffalo app.
 func Setup(app *buffalo.App) {
 	logColorsEnabled := envy.Get("GO_ENV", "development") == "development"
 	app.Logger = logentries.NewLogger(logColorsEnabled)

@@ -31,7 +31,7 @@ func healthCheck(c buffalo.Context) error {
 func middleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		id := c.Request().Header.Get(requestIdentifier)
-		if id != "" {
+		if id == "" {
 			id = uuid.Must(uuid.NewV4()).String()
 		}
 

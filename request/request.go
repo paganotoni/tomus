@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	requestIdentifier = "X-Request-ID"
+	RequestIdentifier = "X-Unique-Id"
 )
 
 var renderEngine *render.Engine
@@ -30,13 +30,13 @@ func healthCheck(c buffalo.Context) error {
 //request. and putting it into the context.
 func middleware(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		id := c.Request().Header.Get(requestIdentifier)
+		id := c.Request().Header.Get(RequestIdentifier)
 		if id == "" {
 			id = uuid.Must(uuid.NewV4()).String()
 		}
 
-		c.Set("X-Request-ID", id)
-		c.LogField("X-Request-ID", id)
+		c.Set(RequestIdentifier, id)
+		c.LogField(RequestIdentifier, id)
 
 		return next(c)
 	}

@@ -9,6 +9,17 @@ Tomus is a library that i use to setup monitoring and observability of the buffa
 tomus.Setup(app, r)
 ```
 
+### Logger
+
+```go
+import (
+    "github.com/paganotoni/tomus"
+)
+...
+tomus.Logger.Info("This is the way to use tomus logger")
+
+```
+
 This will:
 
 - Adds a health check endpoint at `/admin/info`

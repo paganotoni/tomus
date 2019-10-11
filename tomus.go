@@ -9,11 +9,13 @@ import (
 	"github.com/paganotoni/tomus/request"
 )
 
+var logColorsEnabled = envy.Get("GO_ENV", "development") == "development"
+var Logger = logentries.NewLogger(logColorsEnabled)
+
 // Setup receives the app it will add the logger and other tools and from that
 // it adds NewRelic and Logentries elements into the buffalo app.
 func Setup(app *buffalo.App, r *render.Engine) {
-	logColorsEnabled := envy.Get("GO_ENV", "development") == "development"
-	app.Logger = logentries.NewLogger(logColorsEnabled)
+	app.Logger = Logger
 
 	newrelic.MountTo(app, app.Logger)
 	request.MountTo(app, r)

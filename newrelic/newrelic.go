@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
@@ -16,6 +17,7 @@ import (
 var (
 	license = envy.Get("NEWRELIC_LICENSE_KEY", "")
 	env     = envy.Get("NEWRELIC_ENV", "staging")
+	appName = envy.Get("SERVICE_NAME", "/app/missing-name")
 )
 
 func MountTo(app *buffalo.App, logger buffalo.Logger) {
@@ -34,10 +36,10 @@ type tracker struct {
 func NewTracker() tracker {
 	result := tracker{}
 
-	name := envy.Get("NEWRELIC_APP_NAME", fmt.Sprintf("app/%v", envy.Get("APP_NAME", "")))
-	suffix := envy.Get("NEWRELIC_ENV", fmt.Sprintf("(%v)", env))
+	nrName := strings.Replace(appName, "/", "", 1)
+	nrName = fmt.Sprintf("%v (%v)", nrName, env)
 
-	result.config = newrelic.NewConfig(fmt.Sprintf("%v %v", name, suffix), license)
+	result.config = newrelic.NewConfig(nrName, license)
 	result.config.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_NEWRELIC"))
 	result.config.DistributedTracer.Enabled = true
 	result.config.Labels = map[string]string{

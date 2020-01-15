@@ -1,6 +1,6 @@
 ## Tomus
 
-Tomus is a library that i use to setup monitoring and observability of the buffalo apps i work with. This will setup the app i pass to use `New Relic` and `Logentries`.
+Tomus is a library that i use to setup monitoring and observability of the buffalo apps I work with. This will setup the `*buffalo.App` passed app to use `New Relic` or `Datadog`, and `Logentries`.
 
 ### Usage
 

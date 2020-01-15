@@ -10,20 +10,22 @@ import (
 // New receives the Config and from that
 // creates a new tomusWrapper
 func New(config Config) Wrapper {
+	logger := logentries.NewLogger(
+		envy.Get("GO_ENV", "development") == "development",
+	)
+
 	return Wrapper{
 		config: config,
+		logger: logger,
 
-		Logger: logentries.NewLogger(
-			envy.Get("GO_ENV", "development") == "development",
-		),
 		Monitor: config.APMMonitor,
 	}
 }
 
 type Wrapper struct {
 	config Config
+	logger buffalo.Logger
 
-	Logger  buffalo.Logger
 	Monitor APMMonitor
 }
 
@@ -39,4 +41,13 @@ func (h Wrapper) Start() error {
 	}
 
 	return h.config.APMMonitor.Listen()
+}
+
+//Logger returns the logger used
+func (h Wrapper) Logger() buffalo.Logger {
+	if h.logger == nil {
+		h.logger = logentries.NewLogger(envy.Get("GO_ENV", "development") == "development")
+	}
+
+	return h.logger
 }

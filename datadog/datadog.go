@@ -17,6 +17,7 @@ import (
 // Monitor ...
 type Monitor struct {
 	ServiceName string
+	Environment string
 	Host        string
 	TracingPort string
 

@@ -1,24 +1,49 @@
 package tomus
 
 import (
+	"errors"
+
 	"github.com/gobuffalo/buffalo"
-	"github.com/gobuffalo/buffalo/render"
 	"github.com/gobuffalo/envy"
+	"github.com/paganotoni/tomus/datadog"
 	"github.com/paganotoni/tomus/logentries"
 	"github.com/paganotoni/tomus/newrelic"
 	"github.com/paganotoni/tomus/request"
 )
 
-var logColorsEnabled = envy.Get("GO_ENV", "development") == "development"
-var Logger = logentries.NewLogger(logColorsEnabled)
+var (
+	//Logger ...
+	Logger = logentries.NewLogger(
+		envy.Get("GO_ENV", "development") == "development",
+	)
+)
 
-// Setup receives the app it will add the logger and other tools and from that
+// Setup receives the Config and from that
 // it adds NewRelic and Logentries elements into the buffalo app.
-func Setup(app *buffalo.App, r *render.Engine) {
-	app.Logger = Logger
+func Setup(config Config) error {
+	app := config.App
 
-	newrelic.MountTo(app, app.Logger)
-	request.MountTo(app, r)
+	if app == nil {
+		return errors.New("app cannot be nil")
+	}
+
+	switch config.APMKind {
+	case APMKindNewrelic:
+		newrelic.MountTo(app, app.Logger)
+	case APMKindDatadog:
+		dd := datadog.Monitor{
+			ServiceName: config.ServiceName,
+			Enabled:     config.EnableAPM,
+			Environment: config.Environment,
+		}
+
+		dd.Monitor()
+	}
+
+	app.Logger = Logger
+	request.MountTo(app, config.RenderEngine)
+
+	return nil
 }
 
 //TrackError allows to track errors that are not exactly inside a New Relic Tx.

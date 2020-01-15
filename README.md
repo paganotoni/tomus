@@ -11,7 +11,7 @@ tomus.Setup(tomus.Config{
     RenderEngine: r,
 
     APMKind:     tomus.APMKindDatadog,  //The type of APM to use
-    ServiceName: "service",         //Service name to use in APM 
+    ServiceName: "service",             //Service name to use in APM 
     Environment: "production",          //Environment to use in APM
     EnableAPM:   true,                  //If APM is enabled or not
 })

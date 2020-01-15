@@ -6,15 +6,19 @@ Tomus is a library that i use to setup monitoring and observability of the buffa
 
 ```go
 //Inside your buffalo app.go
-tomus.Setup(tomus.Config{
-    App:          app,
-    RenderEngine: r,
+config := tomus.Config{
+    App: app,
+}
 
-    APMKind:     tomus.APMKindDatadog,  //The type of APM to use
-    ServiceName: "service",             //Service name to use in APM 
-    Environment: "production",          //Environment to use in APM
-    EnableAPM:   true,                  //If APM is enabled or not
-})
+if envy.Get("DATADOG_APM_ENABLED", "false") == "true" {
+    config.APMMonitor = datadog.NewMonitor(envy.Get("APP_NAME", "app/no-name")) //you can use NewRelic here if needed.
+}
+
+Tools = tomus.New(config)
+err := Tools.Start() //Woul
+if err != nil {
+    // Do something
+}
 ```
 
 

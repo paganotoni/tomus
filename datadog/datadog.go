@@ -14,8 +14,8 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
-// DatadogMonitor ...
-type DatadogMonitor struct {
+// Monitor ...
+type Monitor struct {
 	ServiceName string
 	Host        string
 	TracingPort string
@@ -23,7 +23,7 @@ type DatadogMonitor struct {
 }
 
 // Monitor ...
-func (dd DatadogMonitor) Monitor() {
+func (dd Monitor) Monitor() {
 	events.Listen(func(e events.Event) {
 		switch e.Kind {
 		case buffalo.EvtAppStart:
@@ -38,7 +38,7 @@ func (dd DatadogMonitor) Monitor() {
 	})
 }
 
-func (dd DatadogMonitor) appStart(e events.Event) {
+func (dd Monitor) appStart(e events.Event) {
 	addr := net.JoinHostPort(
 		dd.Host,
 		dd.TracingPort,
@@ -47,11 +47,11 @@ func (dd DatadogMonitor) appStart(e events.Event) {
 	tracer.Start(tracer.WithAgentAddr(addr))
 }
 
-func (dd DatadogMonitor) appStop(e events.Event) {
+func (dd Monitor) appStop(e events.Event) {
 	defer tracer.Stop()
 }
 
-func (dd DatadogMonitor) routeStarted(e events.Event) {
+func (dd Monitor) routeStarted(e events.Event) {
 
 	ro, err := e.Payload.Pluck("route")
 	if err != nil {
@@ -90,7 +90,7 @@ func (dd DatadogMonitor) routeStarted(e events.Event) {
 	c.Set("span", span)
 }
 
-func (dd DatadogMonitor) routeFinished(e events.Event) {
+func (dd Monitor) routeFinished(e events.Event) {
 	ctx, err := e.Payload.Pluck("context")
 	if err != nil {
 		return

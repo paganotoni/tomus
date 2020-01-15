@@ -33,7 +33,7 @@ type Wrapper struct {
 func (h Wrapper) Start() error {
 	app := h.config.App
 
-	app.Logger = h.Logger
+	app.Logger = h.logger
 	request.MountTo(app)
 
 	if h.config.APMMonitor == nil {

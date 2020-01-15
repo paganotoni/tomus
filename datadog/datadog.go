@@ -20,8 +20,6 @@ type Monitor struct {
 	Environment string
 	Host        string
 	TracingPort string
-
-	Enabled bool
 }
 
 // Monitor ...
@@ -118,14 +116,6 @@ func (dd Monitor) routeFinished(e events.Event) {
 		span.SetTag(ext.Error, fmt.Errorf("%d: %s", status, http.StatusText(status)))
 	}
 
-	c.Logger().Info(status)
+	c.Logger().Info("HEEERRRREEEE")
 	span.Finish()
-}
-
-// DatadogTracer ...
-func DatadogTracer(next buffalo.Handler) buffalo.Handler {
-
-	return func(c buffalo.Context) error {
-		return next(c)
-	}
 }

@@ -27,21 +27,37 @@ func Setup(config Config) error {
 		return errors.New("app cannot be nil")
 	}
 
+	if err := setupAPM(config); err != nil {
+		return err
+	}
+
+	app.Logger = Logger
+	request.MountTo(app, config.RenderEngine)
+
+	return nil
+}
+
+func setupAPM(config Config) error {
+	if !config.EnableAPM {
+		return nil
+	}
+
+	if config.APMKind == 0 {
+		return errors.New("unspecified APM kind, please set APMKind")
+	}
+
+	app := config.App
 	switch config.APMKind {
 	case APMKindNewrelic:
 		newrelic.MountTo(app, app.Logger)
 	case APMKindDatadog:
 		dd := datadog.Monitor{
 			ServiceName: config.ServiceName,
-			Enabled:     config.EnableAPM,
 			Environment: config.Environment,
 		}
 
 		dd.Monitor()
 	}
-
-	app.Logger = Logger
-	request.MountTo(app, config.RenderEngine)
 
 	return nil
 }

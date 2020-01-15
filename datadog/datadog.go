@@ -19,7 +19,8 @@ type Monitor struct {
 	ServiceName string
 	Host        string
 	TracingPort string
-	Enabled     bool
+
+	Enabled bool
 }
 
 // Monitor ...

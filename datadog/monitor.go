@@ -2,9 +2,7 @@ package datadog
 
 import (
 	"errors"
-	"fmt"
 	"math"
-	"net/http"
 	"strconv"
 
 	"github.com/gobuffalo/buffalo"
@@ -27,6 +25,8 @@ func (dd *monitor) Listen() error {
 			dd.appStop(e)
 		case buffalo.EvtRouteStarted:
 			dd.routeStarted(e)
+		case buffalo.EvtRouteErr:
+			dd.routeError(e)
 		case buffalo.EvtRouteFinished:
 			dd.routeFinished(e)
 		}
@@ -82,6 +82,23 @@ func (dd *monitor) routeStarted(e events.Event) {
 	c.Set("span", span)
 }
 
+func (dd *monitor) routeError(e events.Event) {
+	ctx, err := e.Payload.Pluck("context")
+	if err != nil {
+		return
+	}
+
+	c := ctx.(buffalo.Context)
+
+	var span tracer.Span
+	var ok bool
+	if span, ok = c.Value("span").(tracer.Span); !ok {
+		return
+	}
+
+	span.SetTag(ext.Error, e.Error.(error))
+}
+
 func (dd *monitor) routeFinished(e events.Event) {
 	ctx, err := e.Payload.Pluck("context")
 	if err != nil {
@@ -104,9 +121,6 @@ func (dd *monitor) routeFinished(e events.Event) {
 
 	status := response.Status
 	span.SetTag(ext.HTTPCode, strconv.Itoa(status))
-	if status >= 500 && status < 600 {
-		span.SetTag(ext.Error, fmt.Errorf("%d: %s", status, http.StatusText(status)))
-	}
 
 	c.Logger().Debug("Finishing Span")
 	span.Finish()

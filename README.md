@@ -31,14 +31,26 @@ This will:
 
 ### Use Logger
 
-If you want to register something in another part of your project, you can use the tomus logger:
+If you want to register something in another part of your project, you can use the tomus Wrapper logger:
 
 ```go
 import (
     "github.com/paganotoni/tomus"
 )
 
+var monitoringTools tomus.Wrapper
+
 ...
 
-tomus.logger.Info("This is the way to use tomus logger")
+func Setup() {
+    ...
+    monitoringTools = tomus.New(config)
+    ...
+}
+
+
+func something() {
+    monitoringTools.logger.Info("This is the way to use tomus logger")
+}
+
 ```

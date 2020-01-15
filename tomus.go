@@ -49,7 +49,11 @@ func setupAPM(config Config) error {
 	app := config.App
 	switch config.APMKind {
 	case APMKindNewrelic:
-		newrelic.MountTo(app, app.Logger)
+		license := envy.Get("NEWRELIC_LICENSE_KEY", "")
+		env := envy.Get("NEWRELIC_ENV", "staging")
+		appName := envy.Get("SERVICE_NAME", "/app/missing-name")
+
+		newrelic.MountTo(app, app.Logger, appName, env, license)
 	case APMKindDatadog:
 		dd := datadog.Monitor{
 			ServiceName: config.ServiceName,

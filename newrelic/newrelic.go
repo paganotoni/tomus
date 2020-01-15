@@ -2,26 +2,17 @@ package newrelic
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
-	"github.com/gobuffalo/envy"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	newrelic "github.com/newrelic/go-agent"
 )
 
-var (
-	license = envy.Get("NEWRELIC_LICENSE_KEY", "")
-	env     = envy.Get("NEWRELIC_ENV", "staging")
-	appName = envy.Get("SERVICE_NAME", "/app/missing-name")
-)
-
-func MountTo(app *buffalo.App, logger buffalo.Logger) {
-	trk := NewTracker()
+func MountTo(app *buffalo.App, logger buffalo.Logger, serviceName, env, license string) {
+	trk := NewTracker(serviceName, env, license)
 	trk.logger = logger
 
 	app.Use(trk.Middleware)
@@ -33,14 +24,15 @@ type tracker struct {
 	logger buffalo.Logger
 }
 
-func NewTracker() tracker {
+// NewTracker ...
+func NewTracker(serviceName, env, license string) tracker {
 	result := tracker{}
 
-	nrName := strings.Replace(appName, "/", "", 1)
+	nrName := strings.Replace(serviceName, "/", "", 1)
 	nrName = fmt.Sprintf("%v (%v)", nrName, env)
 
 	result.config = newrelic.NewConfig(nrName, license)
-	result.config.Enabled, _ = strconv.ParseBool(os.Getenv("ENABLE_NEWRELIC"))
+	result.config.Enabled = true
 	result.config.DistributedTracer.Enabled = true
 	result.config.Labels = map[string]string{
 		"ENVIRONMENT": env,

@@ -1,42 +1,14 @@
 package tomus
 
 import (
-	"github.com/gobuffalo/buffalo"
-	"github.com/gobuffalo/envy"
-	"github.com/paganotoni/tomus/logentries"
-	"github.com/paganotoni/tomus/request"
+	"github.com/paganotoni/tomus/datadog"
+	"github.com/paganotoni/tomus/newrelic"
 )
 
-// New receives the Config and from that
-// creates a new tomusWrapper
-func New(config Config) Wrapper {
-	return Wrapper{
-		config: config,
+var (
+	// Ensuring datadog Monitor meets the interface
+	_ APMMonitor = datadog.NewMonitor("aaa")
 
-		Logger: logentries.NewLogger(
-			envy.Get("GO_ENV", "development") == "development",
-		),
-		Monitor: config.APMMonitor,
-	}
-}
-
-type Wrapper struct {
-	config Config
-
-	Logger  buffalo.Logger
-	Monitor APMMonitor
-}
-
-// Start ...
-func (h Wrapper) Start() error {
-	app := h.config.App
-
-	app.Logger = h.Logger
-	request.MountTo(app)
-
-	if h.config.APMMonitor == nil {
-		return nil
-	}
-
-	return h.config.APMMonitor.Listen()
-}
+	// Ensuring newrelic Monitor meets the interface
+	_ APMMonitor = newrelic.NewMonitor("aaa", "development", "aaaaa")
+)

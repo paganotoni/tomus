@@ -10,8 +10,14 @@ config := tomus.Config{
     App: app,
 }
 
+// Datadog
 if envy.Get("DATADOG_APM_ENABLED", "false") == "true" {
-    config.APMMonitor = datadog.NewMonitor(envy.Get("APP_NAME", "app/no-name")) //you can use NewRelic here if needed.
+    config.APMMonitor = datadog.NewMonitor(envy.Get("APP_NAME", "app/no-name")) 
+}
+
+// Newrelic
+if envy.Get("NEWRELIC_APM_ENABLED", "false") == "true" {
+    config.APMMonitor = newrelic.NewMonitor(envy.Get("APP_NAME", "app/no-name"), env, licenseKey) 
 }
 
 Tools = tomus.New(config)

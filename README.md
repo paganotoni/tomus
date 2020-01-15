@@ -31,7 +31,7 @@ This will:
 
 ### Use Logger
 
-If you want to register something in another part of your project, you can use the tomus Wrapper logger:
+If you want to log something in another part of your project, you can use the tomus Wrapper Logger property. tomus.Wrapper should be initialized before using the Logger.
 
 ```go
 import (

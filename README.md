@@ -6,7 +6,15 @@ Tomus is a library that i use to setup monitoring and observability of the buffa
 
 ```go
 //Inside your buffalo app.go
-tomus.Setup(app, r)
+tomus.Setup(tomus.Config{
+    App:          app,
+    RenderEngine: r,
+
+    APMKind:     tomus.APMKindDatadog,  //The type of APM to use
+    ServiceName: "servicename",         //Service name to use in APM 
+    Environment: "production",          //Environment to use in APM
+    EnableAPM:   true,                  //If APM is enabled or not
+})
 ```
 
 

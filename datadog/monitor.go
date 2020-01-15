@@ -1,9 +1,9 @@
 package datadog
 
 import (
+	"errors"
 	"fmt"
 	"math"
-	"net"
 	"net/http"
 	"strconv"
 
@@ -14,16 +14,11 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
-// Monitor ...
-type Monitor struct {
+type monitor struct {
 	ServiceName string
-	Environment string
-	Host        string
-	TracingPort string
 }
 
-// Monitor ...
-func (dd Monitor) Monitor() {
+func (dd *monitor) Listen() error {
 	events.Listen(func(e events.Event) {
 		switch e.Kind {
 		case buffalo.EvtAppStart:
@@ -36,22 +31,19 @@ func (dd Monitor) Monitor() {
 			dd.routeFinished(e)
 		}
 	})
+
+	return nil
 }
 
-func (dd Monitor) appStart(e events.Event) {
-	addr := net.JoinHostPort(
-		dd.Host,
-		dd.TracingPort,
-	)
-
-	tracer.Start(tracer.WithAgentAddr(addr))
+func (dd *monitor) appStart(e events.Event) {
+	tracer.Start(tracer.WithServiceName(dd.ServiceName))
 }
 
-func (dd Monitor) appStop(e events.Event) {
+func (dd *monitor) appStop(e events.Event) {
 	defer tracer.Stop()
 }
 
-func (dd Monitor) routeStarted(e events.Event) {
+func (dd *monitor) routeStarted(e events.Event) {
 
 	ro, err := e.Payload.Pluck("route")
 	if err != nil {
@@ -77,7 +69,7 @@ func (dd Monitor) routeStarted(e events.Event) {
 		tracer.ResourceName(resourceName),
 
 		tracer.Tag(ext.EventSampleRate, math.NaN()),
-		tracer.Tag("mux.host", dd.Host),
+		tracer.Tag("mux.host", ""),
 		tracer.Tag(ext.HTTPMethod, c.Request().Method),
 		tracer.Tag(ext.HTTPURL, c.Request().URL.Path),
 	}
@@ -90,7 +82,7 @@ func (dd Monitor) routeStarted(e events.Event) {
 	c.Set("span", span)
 }
 
-func (dd Monitor) routeFinished(e events.Event) {
+func (dd *monitor) routeFinished(e events.Event) {
 	ctx, err := e.Payload.Pluck("context")
 	if err != nil {
 		return
@@ -116,6 +108,18 @@ func (dd Monitor) routeFinished(e events.Event) {
 		span.SetTag(ext.Error, fmt.Errorf("%d: %s", status, http.StatusText(status)))
 	}
 
-	c.Logger().Info("HEEERRRREEEE")
+	c.Logger().Debug("Finishing Span")
 	span.Finish()
+}
+
+// Track ...
+func (dd *monitor) Track(name string, fn func() error) error {
+	return errors.New("Needs to be implemented")
+}
+
+// NewMonitor creates a new monitor for DataDog with the passed serviceName
+func NewMonitor(serviceName string) *monitor {
+	return &monitor{
+		ServiceName: serviceName,
+	}
 }

@@ -6,14 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-var (
-	RequestIdentifier = "X-Unique-Id"
-)
-
-var renderEngine *render.Engine
-
-func MountTo(app *buffalo.App, r *render.Engine) {
-	renderEngine = r
+//MountTo adds
+func MountTo(app *buffalo.App) {
 	app.Use(middleware)
 
 	admin := app.Group("/admin")
@@ -23,20 +17,23 @@ func MountTo(app *buffalo.App, r *render.Engine) {
 
 // healthCheck allows to check if the app is ready to respond.
 func healthCheck(c buffalo.Context) error {
-	return c.Render(200, renderEngine.String("OK"))
+	r := &render.Engine{}
+	return c.Render(200, r.String("OK"))
 }
 
 //middleware takes care of extracting the request id from the
 //request. and putting it into the context.
 func middleware(next buffalo.Handler) buffalo.Handler {
+	requestIdentifier := "X-Unique-Id"
+
 	return func(c buffalo.Context) error {
-		id := c.Request().Header.Get(RequestIdentifier)
+		id := c.Request().Header.Get(requestIdentifier)
 		if id == "" {
 			id = uuid.Must(uuid.NewV4()).String()
 		}
 
-		c.Set(RequestIdentifier, id)
-		c.LogField(RequestIdentifier, id)
+		c.Set(requestIdentifier, id)
+		c.LogField(requestIdentifier, id)
 
 		return next(c)
 	}

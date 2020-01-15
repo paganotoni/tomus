@@ -2,7 +2,6 @@ package tomus
 
 import (
 	"github.com/gobuffalo/buffalo"
-	"github.com/gobuffalo/buffalo/render"
 )
 
 const (
@@ -10,16 +9,14 @@ const (
 	APMKindNewrelic = iota + 1
 
 	// APMKindDatadog defines datadog usage
-	APMKindDatadog = iota + 1
+	APMKindDatadog
 )
 
-//Config is used to start tomus monitoring
+//Config is used to start Tomus monitoring
 type Config struct {
-	App          *buffalo.App
-	RenderEngine *render.Engine
+	//App is the application where we would mount routes for monitoring
+	App *buffalo.App
 
-	APMKind     int
-	ServiceName string
-	Environment string
-	EnableAPM   bool
+	//The APM monitor we would use for
+	APMMonitor APMMonitor
 }

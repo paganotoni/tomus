@@ -56,7 +56,7 @@ func Setup() {
 
 
 func something() {
-    monitoringTools.logger.Info("This is the way to use tomus logger")
+    monitoringTools.Logger().Info("This is the way to use tomus logger")
 }
 
 ```

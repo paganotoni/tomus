@@ -22,6 +22,7 @@ func New(config Config) Wrapper {
 	}
 }
 
+//Wrapper ...
 type Wrapper struct {
 	config Config
 	logger buffalo.Logger

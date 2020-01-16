@@ -14,6 +14,7 @@ import (
 
 type monitor struct {
 	ServiceName string
+	Host        string
 }
 
 func (dd *monitor) Listen() error {
@@ -69,7 +70,7 @@ func (dd *monitor) routeStarted(e events.Event) {
 		tracer.ResourceName(resourceName),
 
 		tracer.Tag(ext.EventSampleRate, math.NaN()),
-		tracer.Tag("mux.host", ""),
+		tracer.Tag("mux.host", dd.Host),
 		tracer.Tag(ext.HTTPMethod, c.Request().Method),
 		tracer.Tag(ext.HTTPURL, c.Request().URL.Path),
 	}
@@ -132,8 +133,9 @@ func (dd *monitor) Track(name string, fn func() error) error {
 }
 
 // NewMonitor creates a new monitor for DataDog with the passed serviceName
-func NewMonitor(serviceName string) *monitor {
+func NewMonitor(serviceName, host string) *monitor {
 	return &monitor{
 		ServiceName: serviceName,
+		Host:        host,
 	}
 }

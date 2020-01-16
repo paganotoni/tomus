@@ -8,6 +8,7 @@ require (
 	github.com/gobuffalo/buffalo v0.14.10
 	github.com/gobuffalo/envy v1.7.1
 	github.com/gobuffalo/events v1.4.0
+	github.com/gobuffalo/httptest v1.4.0
 	github.com/gobuffalo/logger v1.0.1
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/markbates/safe v1.0.1
@@ -16,6 +17,7 @@ require (
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.2
+	github.com/stretchr/testify v1.4.0
 	github.com/tinylib/msgp v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20190927123631-a832865fa7ad
 	gopkg.in/DataDog/dd-trace-go.v1 v1.20.1

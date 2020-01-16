@@ -7,7 +7,7 @@ import (
 
 var (
 	// Ensuring datadog Monitor meets the interface
-	_ APMMonitor = datadog.NewMonitor("aaa")
+	_ APMMonitor = datadog.NewMonitor("aaa", "sssss")
 
 	// Ensuring newrelic Monitor meets the interface
 	_ APMMonitor = newrelic.NewMonitor("aaa", "development", "aaaaa")

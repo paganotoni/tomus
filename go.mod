@@ -5,11 +5,12 @@ go 1.13
 require (
 	github.com/DataDog/datadog-go v3.3.1+incompatible // indirect
 	github.com/bsphere/le_go v0.0.0-20170215134836-7a984a84b549
-	github.com/gobuffalo/buffalo v0.15.3
+	github.com/gobuffalo/buffalo v0.15.4
 	github.com/gobuffalo/envy v1.8.1
 	github.com/gobuffalo/events v1.4.0
 	github.com/gobuffalo/httptest v1.4.0
 	github.com/gobuffalo/logger v1.0.3
+	github.com/gobuffalo/release v1.15.0 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/markbates/safe v1.0.1
 	github.com/newrelic/go-agent v2.13.0+incompatible

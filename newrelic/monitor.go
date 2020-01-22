@@ -94,7 +94,7 @@ func (nr *monitor) Track(name string, fn func() error) error {
 }
 
 // NewMonitor creates a new monitor for DataDog with the passed serviceName
-func NewMonitor(serviceName, env, license string) *monitor, error {
+func NewMonitor(serviceName, env, license string) *monitor {
 	nrName := strings.Replace(serviceName, "/", "", 1)
 	nrName = fmt.Sprintf("%v (%v)", nrName, env)
 

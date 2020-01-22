@@ -10,7 +10,6 @@ require (
 	github.com/gobuffalo/events v1.4.0
 	github.com/gobuffalo/httptest v1.4.0
 	github.com/gobuffalo/logger v1.0.3
-	github.com/gobuffalo/release v1.15.0 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/markbates/safe v1.0.1
 	github.com/newrelic/go-agent v2.13.0+incompatible

@@ -2,6 +2,7 @@ package datadog
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 
@@ -48,7 +49,7 @@ func (dd *monitor) routeStarted(e events.Event) {
 
 	ro, err := e.Payload.Pluck("route")
 	if err != nil {
-		//Do something
+		fmt.Printf("datadog monitor: error getting the route: %v\n", err.Error())
 		return
 	}
 
@@ -56,7 +57,7 @@ func (dd *monitor) routeStarted(e events.Event) {
 
 	ctx, err := e.Payload.Pluck("context")
 	if err != nil {
-		//Do something
+		fmt.Printf("datadog monitor: error getting the context: %v\n", err.Error())
 		return
 	}
 
@@ -76,6 +77,7 @@ func (dd *monitor) routeStarted(e events.Event) {
 	}
 
 	if spanctx, err := tracer.Extract(tracer.HTTPHeadersCarrier(c.Request().Header)); err == nil {
+		fmt.Printf("datadog monitor: extracting headers: %v\n", err.Error())
 		opts = append(opts, tracer.ChildOf(spanctx))
 	}
 
@@ -86,6 +88,7 @@ func (dd *monitor) routeStarted(e events.Event) {
 func (dd *monitor) routeError(e events.Event) {
 	ctx, err := e.Payload.Pluck("context")
 	if err != nil {
+		fmt.Printf("datadog monitor: error getting the context: %v\n", err.Error())
 		return
 	}
 
@@ -94,6 +97,7 @@ func (dd *monitor) routeError(e events.Event) {
 	var span tracer.Span
 	var ok bool
 	if span, ok = c.Value("span").(tracer.Span); !ok {
+		fmt.Printf("datadog monitor: error getting the span: %v\n", err.Error())
 		return
 	}
 
@@ -103,6 +107,7 @@ func (dd *monitor) routeError(e events.Event) {
 func (dd *monitor) routeFinished(e events.Event) {
 	ctx, err := e.Payload.Pluck("context")
 	if err != nil {
+		fmt.Printf("datadog monitor: error getting the context: %v\n", err.Error())
 		return
 	}
 
@@ -113,17 +118,18 @@ func (dd *monitor) routeFinished(e events.Event) {
 	var ok bool
 
 	if span, ok = c.Value("span").(tracer.Span); !ok {
+		fmt.Printf("datadog monitor: error getting the span: %v\n", err.Error())
 		return
 	}
 
 	if response, ok = c.Response().(*buffalo.Response); !ok {
+		fmt.Printf("datadog monitor: error getting the response: %v\n", err.Error())
 		return
 	}
 
 	status := response.Status
 	span.SetTag(ext.HTTPCode, strconv.Itoa(status))
 
-	c.Logger().Debug("Finishing Span")
 	span.Finish()
 }
 

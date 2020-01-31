@@ -77,7 +77,7 @@ func (dd *monitor) routeStarted(e events.Event) {
 	}
 
 	if spanctx, err := tracer.Extract(tracer.HTTPHeadersCarrier(c.Request().Header)); err == nil {
-		fmt.Printf("datadog monitor: extracting headers: %v\n", err.Error())
+		c.Logger().Errorf("datadog monitor: extracting headers: %v\n", err.Error())
 		opts = append(opts, tracer.ChildOf(spanctx))
 	}
 
@@ -97,7 +97,7 @@ func (dd *monitor) routeError(e events.Event) {
 	var span tracer.Span
 	var ok bool
 	if span, ok = c.Value("span").(tracer.Span); !ok {
-		fmt.Printf("datadog monitor: error getting the span: %v\n", err.Error())
+		c.Logger().Errorf("datadog monitor: error getting the span: %v\n", err.Error())
 		return
 	}
 
@@ -118,12 +118,12 @@ func (dd *monitor) routeFinished(e events.Event) {
 	var ok bool
 
 	if span, ok = c.Value("span").(tracer.Span); !ok {
-		fmt.Printf("datadog monitor: error getting the span: %v\n", err.Error())
+		c.Logger().Errorf("datadog monitor: error getting the span: %v\n", err.Error())
 		return
 	}
 
 	if response, ok = c.Response().(*buffalo.Response); !ok {
-		fmt.Printf("datadog monitor: error getting the response: %v\n", err.Error())
+		c.Logger().Errorf("datadog monitor: error getting the response: %v\n", err.Error())
 		return
 	}
 

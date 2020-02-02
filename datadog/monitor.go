@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net"
 	"strconv"
 
 	"github.com/gobuffalo/buffalo"
@@ -16,6 +17,7 @@ import (
 type monitor struct {
 	ServiceName string
 	Host        string
+	Port        int
 }
 
 func (dd *monitor) Listen() error {
@@ -38,7 +40,12 @@ func (dd *monitor) Listen() error {
 }
 
 func (dd *monitor) appStart(e events.Event) {
-	tracer.Start(tracer.WithServiceName(dd.ServiceName))
+	addr := net.JoinHostPort(
+		dd.Host,
+		strconv.Itoa(dd.Port),
+	)
+
+	tracer.Start(tracer.WithAgentAddr(addr))
 }
 
 func (dd *monitor) appStop(e events.Event) {
@@ -143,5 +150,6 @@ func NewMonitor(serviceName, host string) *monitor {
 	return &monitor{
 		ServiceName: serviceName,
 		Host:        host,
+		Port:        8126,
 	}
 }

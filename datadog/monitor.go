@@ -15,9 +15,14 @@ import (
 )
 
 type monitor struct {
+	//ServiceName is the identifier of the service used when reporting to DD APM.
 	ServiceName string
-	Host        string
-	Port        int
+
+	// Host is the agent host where monitor reports traces, defaults to localhost
+	Host string
+
+	// Port is the port used to report traces on the agent host, it defaults to 8126
+	Port int
 }
 
 func (dd *monitor) Listen() error {
@@ -147,6 +152,10 @@ func (dd *monitor) Track(name string, fn func() error) error {
 
 // NewMonitor creates a new monitor for DataDog with the passed serviceName
 func NewMonitor(serviceName, host string) *monitor {
+	if host == "" {
+		host = "localhost"
+	}
+
 	return &monitor{
 		ServiceName: serviceName,
 		Host:        host,

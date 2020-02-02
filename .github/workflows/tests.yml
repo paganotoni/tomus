@@ -15,6 +15,9 @@ jobs:
       with:
         fetch-depth: 1
     - name: Test
+      env:
+        GO111MODULE: on
+        GOPROXY: "https://proxy.golang.org"
       run: |
         go mod tidy -v
         go test -race ./...

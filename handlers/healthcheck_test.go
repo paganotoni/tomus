@@ -13,7 +13,7 @@ func Test_healthCheck(t *testing.T) {
 	r := require.New(t)
 
 	app := buffalo.New(buffalo.Options{})
-	MountTo(app)
+	app.GET("/admin/info", healthCheck)
 
 	ht := httptest.New(app)
 	res := ht.HTML("/admin/info").Get()

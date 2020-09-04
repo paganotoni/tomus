@@ -25,7 +25,7 @@ type monitor struct {
 }
 
 func (dd *monitor) Listen() error {
-	events.Listen(func(e events.Event) {
+	del, err := events.Listen(func(e events.Event) {
 		switch e.Kind {
 		case buffalo.EvtAppStart:
 			dd.appStart(e)
@@ -39,8 +39,9 @@ func (dd *monitor) Listen() error {
 			dd.routeFinished(e)
 		}
 	})
+	defer del()
 
-	return nil
+	return err
 }
 
 func (dd *monitor) appStart(e events.Event) {

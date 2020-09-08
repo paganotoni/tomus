@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_healthCheck(t *testing.T) {
+func Test_HealthCheck(t *testing.T) {
 	r := require.New(t)
 
 	app := buffalo.New(buffalo.Options{})
-	app.GET("/admin/info", healthCheck)
+	app.GET("/admin/info", HealthCheck)
 
 	ht := httptest.New(app)
 	res := ht.HTML("/admin/info").Get()

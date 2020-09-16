@@ -27,27 +27,30 @@ func Test_Track(t *testing.T) {
 
 	var flag int
 	mon := NewMonitor("service", "")
-	mon.Track("backgroundThing", func() error {
+	err := mon.Track("backgroundThing", func() error {
 		flag = 10
 		return nil
 	})
 
 	spans := mt.FinishedSpans()
 
+	r.NoError(err)
 	r.Equal(len(spans), 1)
 	r.Equal(10, flag)
 
-	mon.Track("backgroundThing", func() error {
+	err = mon.Track("backgroundThing", func() error {
 		return errors.New("sample error")
 	})
+
+	r.NoError(err)
 
 	spans = mt.FinishedSpans()
 	r.Equal(len(spans), 2)
 
-	err := spans[1].Tag(ext.Error)
-	r.NotNil(err)
+	errs := spans[1].Tag(ext.Error)
+	r.NotNil(errs)
 
-	r.Error(err.(error))
-	r.Equal(err.(error).Error(), "sample error")
+	r.Error(errs.(error))
+	r.Equal(errs.(error).Error(), "sample error")
 	r.Equal(spans[1].Tag("mux.host").(string), "localhost")
 }

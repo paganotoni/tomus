@@ -7,9 +7,13 @@ import (
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/events"
 	newrelic "github.com/newrelic/go-agent"
+	"github.com/paganotoni/tomus"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
+
+// Ensuring monitor is tomus.APMMonitor
+var _ tomus.APMMonitor = (*monitor)(nil)
 
 type monitor struct {
 	newrelicApplication newrelic.Application
@@ -94,7 +98,7 @@ func (nr *monitor) Track(name string, fn func() error) error {
 }
 
 // NewMonitor creates a new monitor for DataDog with the passed serviceName
-func NewMonitor(serviceName, env, license string) *monitor {
+func NewMonitor(serviceName, env, license string) tomus.APMMonitor {
 	nrName := strings.Replace(serviceName, "/", "", 1)
 	nrName = fmt.Sprintf("%v (%v)", nrName, env)
 

@@ -12,7 +12,7 @@ import (
 func Test_New(t *testing.T) {
 	r := require.New(t)
 
-	mon := NewMonitor("service", "")
+	mon := NewMonitor("service", "").(*monitor)
 
 	r.Equal("service", mon.ServiceName)
 	r.Equal("localhost", mon.Host)

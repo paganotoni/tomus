@@ -8,10 +8,14 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/events"
+	"github.com/paganotoni/tomus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
+
+// Ensuring monitor is tomus.APMMonitor
+var _ tomus.APMMonitor = (*monitor)(nil)
 
 type monitor struct {
 	//ServiceName is the identifier of the service used when reporting to DD APM.
@@ -167,7 +171,7 @@ func (dd *monitor) Track(name string, fn func() error) error {
 }
 
 // NewMonitor creates a new monitor for DataDog with the passed serviceName
-func NewMonitor(serviceName, host string) *monitor {
+func NewMonitor(serviceName, host string) tomus.APMMonitor {
 	if host == "" {
 		host = "localhost"
 	}

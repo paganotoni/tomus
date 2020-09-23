@@ -30,7 +30,7 @@ func (dd *monitor) Track(name string, fn func() error) error {
 	return nil
 }
 
-func (dd *monitor) TrackChild(options tomus.TrackingOptions, fn func() error) error {
+func (dd *monitor) TrackChild(options tomus.TrackingOptions, fn func(interface{}) error) error {
 	opts := []ddtrace.StartSpanOption{
 		tracer.SpanType(ext.SpanType),
 		tracer.ServiceName(dd.ServiceName),
@@ -45,12 +45,11 @@ func (dd *monitor) TrackChild(options tomus.TrackingOptions, fn func() error) er
 	}
 
 	span := tracer.StartSpan(options.Name, opts...)
-	err := fn()
+	err := fn(span)
 	if err != nil {
 		span.SetTag(ext.Error, err)
 	}
 
 	span.Finish()
-
 	return nil
 }

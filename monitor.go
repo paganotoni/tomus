@@ -13,7 +13,7 @@ type APMMonitor interface {
 }
 
 type NestedSpansMonitor interface {
-	TrackChild(name string, parentSpan interface{}, fn func() error) error
+	TrackChild(name string, parentSpan interface{}, fn func(interface{}) error) error
 }
 
 // TrackingOptions

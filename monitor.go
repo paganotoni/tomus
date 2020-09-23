@@ -10,10 +10,9 @@ type APMMonitor interface {
 	// Track is useful for things like BackgroundTransactions
 	// that cannot be tracked with events.
 	Track(string, func() error) error
-}
 
-type NestedSpansMonitor interface {
-	TrackChild(name string, parentSpan interface{}, fn func(interface{}) error) error
+	//
+	TrackChild(parentSpan TrackingOptions, fn func(interface{}) error) error
 }
 
 // TrackingOptions

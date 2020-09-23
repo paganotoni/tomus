@@ -92,6 +92,11 @@ func (nr *monitor) routeFinished(e events.Event) {
 	}
 }
 
+// TrackChild ...
+func (nr *monitor) TrackChild(options tomus.TrackingOptions, fn func(interface{}) error) error {
+	return errors.New("Needs to be implemented")
+}
+
 // Track ...
 func (nr *monitor) Track(name string, fn func() error) error {
 	return errors.New("Needs to be implemented")

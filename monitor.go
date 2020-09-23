@@ -11,3 +11,13 @@ type APMMonitor interface {
 	// that cannot be tracked with events.
 	Track(string, func() error) error
 }
+
+type NestedSpansMonitor interface {
+	TrackChild(name string, parentSpan interface{}, fn func() error) error
+}
+
+// TrackingOptions
+type TrackingOptions struct {
+	Name       string
+	ParentSpan interface{}
+}

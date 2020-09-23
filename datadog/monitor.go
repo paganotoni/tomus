@@ -79,7 +79,6 @@ func (dd *monitor) routeStarted(e events.Event) {
 	c := ctx.(buffalo.Context)
 
 	resourceName := c.Request().Method + " " + currentRoute.Path
-
 	opts := []ddtrace.StartSpanOption{
 		tracer.SpanType(ext.SpanTypeWeb),
 		tracer.ServiceName(dd.ServiceName),
@@ -146,27 +145,6 @@ func (dd *monitor) routeFinished(e events.Event) {
 	span.SetTag(ext.HTTPCode, strconv.Itoa(status))
 
 	span.Finish()
-}
-
-// Track allows to track custom functions with DDog
-func (dd *monitor) Track(name string, fn func() error) error {
-	opts := []ddtrace.StartSpanOption{
-		tracer.SpanType(ext.SpanType),
-		tracer.ServiceName(dd.ServiceName),
-		tracer.ResourceName(name),
-
-		tracer.Tag(ext.EventSampleRate, math.NaN()),
-		tracer.Tag("mux.host", dd.Host),
-	}
-
-	span := tracer.StartSpan(name, opts...)
-	err := fn()
-	if err != nil {
-		span.SetTag(ext.Error, err)
-	}
-
-	span.Finish()
-	return nil
 }
 
 // NewMonitor creates a new monitor for DataDog with the passed serviceName
